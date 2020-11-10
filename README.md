@@ -1,5 +1,5 @@
-# Publication in [Energy Elsevier Journal](https://www.journals.elsevier.com/energy)
-## :zap: A novel decomposition-ensemble learning framework for multi-step ahead wind energy forecasting
+# Publication in 
+## :zap: Wind speed multi-step ahead forecasting based on dual signal decomposition coupled with stacking-ensemble learning approach
 [<img src="https://orcid.org/sites/default/files/images/orcid_16x16.png" style="width:1em;margin-right:.5em;" alt="ORCID iD icon"></img> Ramon Gomes da Silva][RamonID], [<img src="https://orcid.org/sites/default/files/images/orcid_16x16.png" style="width:1em;margin-right:.5em;" alt="ORCID iD icon"></img> Sinvaldo Rodrigues Moreno][SinvaldoID], [<img src="https://orcid.org/sites/default/files/images/orcid_16x16.png" style="width:1em;margin-right:.5em;" alt="ORCID iD icon"></img> Viviana Cocco Mariani][VivianaID], [<img src="https://orcid.org/sites/default/files/images/orcid_16x16.png" style="width:1em;margin-right:.5em;" alt="ORCID iD icon"></img> Leandro dos Santos Coelho][LeandroID]
 
 ![Proposed Forecasting Framework](Figures/framework.png)|
