@@ -14,9 +14,9 @@ DataDir       <- paste(BaseDir, "Data",sep = "/")
 # load Packages
 setwd(CodesDir)
 source("checkpackages.R")
-source("main_elm.R")
+# source("main_elm.R")
 source('decomp_stack_pred.R')
-# source("stack_pred.R")
+source("stack_pred.R")
 
 packages <- c('vmd','dplyr','tidyverse','magrittr', 'caret', 'reshape2', 'gghighlight',
               'TTR', 'forecast', 'Metrics', 'e1071', "cowplot", "elmNNRcpp", "hht", "grid",
@@ -43,6 +43,9 @@ for (dataset in seq(3)) {
 }
 names(raw_data) <- c('VMD', 'SSA', 'VMD-SSA')
 
+# set to Results directory
+setwd(ResultsDir)
+
 # set a list of dates to analyze
 months <- c(3,4,5)
 dates <- paste0('2020-',months,'-01') %>% as.Date() %>% format("%Y-%m")
@@ -58,19 +61,32 @@ model_list <- c(
   'mlp',
   'lasso'
 ) %>% sort()
+meta_model <- 'cubist'
+horizon <- c(1,2,3)
 
 count <- 1
-
 for (dataset in seq(3)) {  
   for (month in seq(months)) {
     # filtering the data according to month list
     wind_data[[count]] <- raw_data[[dataset]][months(raw_data[[dataset]]$TimeStamp) %in% month.name[months[month]],] %>% as.data.frame()
     
     # training using ceemd stack
-    decomp_stack_results[[count]] <- decomp_stack_pred(wind_data[[count]], model_list)
-    # 
-    # # training using stack models
-    # stack_results[[month]] <- stack_pred(wind_data[[month]], model_list)
+    decomp_stack_results[[count]] <- decomp_stack_pred(wind_data[[count]], model_list, meta_model, horizon)
+     
+    saveRDS(
+      object = decomp_stack_results[[count]],
+      file = paste0('results_',names(raw_data)[dataset],'_',dates[month],'_stack.rds')
+    )
+    
+    # training using stack models
+    if (count %in% c(1:3)) {
+      stack_results[[count]] <- stack_pred(wind_data[[count]], model_list, meta_model, horizon)
+      
+      saveRDS(
+        object = stack_results[[count]],
+        file = paste0('results_stack_',dates[month],'.rds')
+      )
+    }
     
     cat("\n\nModel:", names(raw_data)[dataset], '\tMonth:', month.name[months[month]])
     
@@ -80,45 +96,62 @@ for (dataset in seq(3)) {
 
 # name wind data lists
 names(wind_data) <- paste(rep(names(raw_data), each = length(months)), month.name[months], sep = "-")
+names(decomp_stack_results) <- names(wind_data)
+names(stack_results) <- month.name[months]
 
-# Save results ------------------------------------------------------------
+# Save metrics ------------------------------------------------------------
 # set working directory
 setwd(ResultsDir)
 
-# loop to save RDS
+# loop to save metrics results
+FH <- c('Six-steps','Twelve-steps','Twenty-four-steps') # aux to create forecasting horizon column
+
 count <- 1
 for (dataset in seq(3)) {
   for (month in seq(months)) {
-    saveRDS(
-      object = decomp_stack_results[[count]],
-      file = paste0('results_',names(raw_data)[dataset],'_',dates[month],'_stack.rds')
-    )
+    filename_decomp_stack <- paste0('metrics_', names(raw_data)[dataset],'_',dates[month],'_stack.csv') # decomp stack file name  
+    file.create(filename_decomp_stack) # create file decomp
     
-    # saveRDS(
-    #   object = stack_results[[dataset]],
-    #   file = paste0('results_',dates[dataset],'_stack.rds')
-    # )
+    # append header in csv files
+    data.frame('model','FH','MAE','MAPE','RMSE') %>%
+      write.table(file = filename_decomp_stack,
+                  append = TRUE,
+                  sep = ',',
+                  col.names = FALSE,
+                  row.names = FALSE)
+    
+    for (metric in seq(decomp_stack_results[[count]]$VMD_Metrics)) {
+      # save decomp stack metrics in csv
+      data.frame(
+        model = paste0(names(raw_data)[dataset],'-STACK'),
+        FH = rep(FH[metric]),
+        decomp_stack_results[[count]]$STACK_Metrics[[metric]] %>% as.data.frame() %>% t()
+      ) %>%
+        write.table(file = filename_decomp_stack,
+                    append = TRUE,
+                    sep = ',',
+                    row.names = FALSE,
+                    col.names = FALSE)
+      
+      # save decomp metrics in csv
+      data.frame(
+        FH = rep(FH[metric]),
+        decomp_stack_results[[count]]$VMD_Metrics[[metric]][,-1]
+      ) %>%
+        write.table(file = filename_decomp_stack,
+                    append = TRUE,
+                    sep = ',',
+                    row.names = TRUE,
+                    col.names = FALSE)
+      
+    }
     count <- count + 1
   }
 }
 
-# loop to save metrics results
-FH <- c('One-steps','Two-steps','Three-steps') # aux to create forecasting horizon column
-
-for (dataset in seq(dates)) {
-  filename_ceemd_stack <- paste0('dataset_',dates[dataset],'_ceemd_stack_metrics.csv') # ceemd stack file name
-  filename_stack <- paste0('dataset_',dates[dataset],'_stack_metrics.csv') # stack file name
-  
-  file.create(filename_ceemd_stack) # create file ceemd
+for (dataset in seq(months)) {
+  filename_stack <- paste0('metrics_stack_',dates[dataset],'.csv') # stack file name
   file.create(filename_stack) # create file stack
-  
-  # append header in csv files
-  data.frame('model','FH','MAE','MAPE','RMSE') %>%
-    write.table(file = filename_ceemd_stack,
-                append = TRUE,
-                sep = ',',
-                col.names = FALSE,
-                row.names = FALSE)
   data.frame('model','FH','MAE','MAPE','RMSE') %>%
     write.table(file = filename_stack,
                 append = TRUE,
@@ -126,38 +159,18 @@ for (dataset in seq(dates)) {
                 col.names = FALSE,
                 row.names = FALSE)
   
-  for (metric in seq(ceemd_stack_results[[dataset]]$CEEMD_Metrics)) {
-    # save ceemd_stack metrics in csv
-    data.frame(
-      FH = rep(FH[metric]),
-      ceemd_stack_results[[dataset]]$STACK_Metrics[[metric]][,-1]
-    ) %>%
-      write.table(file = filename_ceemd_stack,
-                  append = TRUE,
-                  sep = ',',
-                  col.names = FALSE,
-                  row.names = TRUE)
-    # save ceemd metrics in csv
-    data.frame(
-      FH = rep(FH[metric]),
-      ceemd_stack_results[[dataset]]$CEEMD_Metrics[[metric]][,-1]
-    ) %>%
-      write.table(file = filename_ceemd_stack,
-                  append = TRUE,
-                  sep = ',',
-                  col.names = FALSE,
-                  row.names = TRUE)
-    
+  for (metric in seq(stack_results[[dataset]]$Metrics)) {
     # save stack metrics in csv
     data.frame(
+      model = 'STACK',
       FH = rep(FH[metric]),
-      stack_results[[dataset]]$STACK_Metrics[[metric]][,-1]
+      stack_results[[dataset]]$STACK_Metrics[[metric]] %>% as.data.frame() %>% t()
     ) %>%
       write.table(file = filename_stack,
                   append = TRUE,
                   sep = ',',
                   col.names = FALSE,
-                  row.names = TRUE)
+                  row.names = FALSE)
     # save single metrics in csv
     data.frame(
       FH = rep(FH[metric]),
@@ -171,27 +184,22 @@ for (dataset in seq(dates)) {
   }
 }
 
+
 # Load data --------------------------------------------------------------------
 setwd(ResultsDir)
 
-## load data
-file_list <- list.files(pattern = '.rds') # list the .rds files
-
-ceemd_stack_results <- list()
-stack_results <- list()
-
-count_stack <- 1 # single models aux counter
-count_ceemd_stack <- 1 # vmd models aux counter 
-
-# loop to read data
+## load decomp data
+file_list <- list.files(pattern = 'stack.rds') # list the .rds files
+decomp_stack_results <- list()
 for (dataset in seq(file_list)) {
-  if (dataset %% 2 != 0) {
-    ceemd_stack_results[[count_ceemd_stack]] <- readRDS(file = file_list[dataset])
-    count_ceemd_stack <- count_ceemd_stack + 1
-  } else {
-    stack_results[[count_stack]] <- readRDS(file = file_list[dataset])
-    count_stack <- count_stack + 1
-  }
+  decomp_stack_results[[dataset]] <- readRDS(file = file_list[dataset])
+}
+
+## load stack data
+file_list <- list.files(pattern = 'results_stack')
+stack_results <- list()
+for (dataset in seq(file_list)) {
+  stack_results[[dataset]] <- readRDS(file = file_list[dataset])
 }
 
 ## Plot Predict x Observed test ----

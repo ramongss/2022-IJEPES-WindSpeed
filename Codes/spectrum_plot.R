@@ -19,8 +19,8 @@ plot <- ssa %>% ggplot(aes(x = x, y = y)) +
   xlab('Components number') + ylab('Normalized spectrum')
 
 plot %>% ggsave(
-  filename = 'spectrum.png',
-  device = 'png',
-  width = 12,
+  filename = 'spectrum.pdf',
+  device = 'pdf',
+  width = 6.75,
   height = 6.75
 )

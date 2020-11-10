@@ -1,5 +1,5 @@
-decomp_stack_pred <- function(data, model_list){
-  cat('\n\n######### Prediction #########\n###########',
+decomp_stack_pred <- function(data, model_list, meta_model, horizon){
+  cat('\n\n######### Decomposition Prediction #########\n###########',
       as.character(format.Date(data$TimeStamp[1])),'###########\n\n')
   # Data preprocessing ------------------------------------------------------
   # create dataframes
@@ -142,7 +142,7 @@ decomp_stack_pred <- function(data, model_list){
   metrics_stack_test <- list()
   predictions <- list()
   errors <- list()
-  horizon <- c(6,12,24)
+  horizon <- horizon
   for (h in seq(length(horizon))) {
     {
       hrz <- horizon[h]
@@ -281,7 +281,7 @@ decomp_stack_pred <- function(data, model_list){
     stack_data_train <- stack_data[1:cut,]
     stack_data_test <- tail(stack_data,n-cut)
     
-    meta_model <- 'cubist'
+    meta_model <- meta_model
     
     stack_pred_train <- matrix(nrow = nrow(stack_data_train), ncol = 1)
     stack_pred_test <- matrix(nrow = nrow(stack_data_test), ncol = 1)
@@ -291,7 +291,6 @@ decomp_stack_pred <- function(data, model_list){
     metrics_stack_test[[h]] <- matrix(nrow = 1, ncol = 3)
     colnames(metrics_stack_train[[h]]) <- c("MAE","MAPE","RMSE")
     colnames(metrics_stack_test[[h]]) <- colnames(metrics_stack_train[[h]])
-    rownames(metrics_stack_test[[h]]) <- rownames(metrics_stack_train[[h]])
 
     stack_model[[h]] <- train(
       y~., data = stack_data_train,
