@@ -33,7 +33,7 @@ decomp_stack_pred <- function(data, model_list, meta_model, horizon){
   
   for (i in seq(IMF)) {
     n <- dim(IMF[[i]])[1]
-    cut <- round(n * 0.8)
+    cut <- n - 1008
     
     IMF_train[[i]] <- IMF[[i]][1:cut,]
     IMF_test[[i]]  <- tail(IMF[[i]],n-cut)
@@ -165,7 +165,7 @@ decomp_stack_pred <- function(data, model_list, meta_model, horizon){
       PTEmo[[m]] <- matrix(ncol = length(IMF), nrow = nrow(IMF_xtest[[1]]))
       
       for (c in 1:length(Comp_train[[m]])) {
-        if (h == 1) {
+        if (hrz == 1) {
           # train
           PTRmo[[m]][,c] <- (predict(model_matrix[[m,c]], Comp_train[[m]][[c]]))
           
@@ -177,7 +177,7 @@ decomp_stack_pred <- function(data, model_list, meta_model, horizon){
             if(p%%hrz !=1) {
               PTRmo[[m]][p,c] <- (predict(model_matrix[[m,c]], Comp_train[[m]][[c]][p,]))
               if (hrz <= lag){
-                for (l in 1:(h-1)) {Comp_train[[m]][[c]][p+l,l] <- PTRmo[[m]][p,c]}
+                for (l in 1:(hrz-1)) {Comp_train[[m]][[c]][p+l,l] <- PTRmo[[m]][p,c]}
               } else {
                 for (l in 1:lag) {Comp_train[[m]][[c]][p+l,l] <- PTRmo[[m]][p,c]}
               }
@@ -185,7 +185,7 @@ decomp_stack_pred <- function(data, model_list, meta_model, horizon){
               Comp_train[[m]][[c]][p:cut,] <- IMF_xtrain[[c]][p:cut,]
               PTRmo[[m]][p,c] <- (predict(model_matrix[[m,c]], Comp_train[[m]][[c]][p,]))
               if (hrz <= lag){
-                for (l in 1:(h-1)) {Comp_train[[m]][[c]][p+l,l] <- PTRmo[[m]][p,c]}
+                for (l in 1:(hrz-1)) {Comp_train[[m]][[c]][p+l,l] <- PTRmo[[m]][p,c]}
               } else {
                 for (l in 1:lag) {Comp_train[[m]][[c]][p+l,l] <- PTRmo[[m]][p,c]}
               }
@@ -197,7 +197,7 @@ decomp_stack_pred <- function(data, model_list, meta_model, horizon){
             if(p%%hrz !=1) {
               PTEmo[[m]][p,c] <- (predict(model_matrix[[m,c]], Comp_test[[m]][[c]][p,]))
               if (hrz <= lag){
-                for (l in 1:(h-1)) {Comp_test[[m]][[c]][p+l,l] <- PTEmo[[m]][p,c]}
+                for (l in 1:(hrz-1)) {Comp_test[[m]][[c]][p+l,l] <- PTEmo[[m]][p,c]}
               } else {
                 for (l in 1:lag) {Comp_test[[m]][[c]][p+l,l] <- PTEmo[[m]][p,c]}
               }
@@ -205,7 +205,7 @@ decomp_stack_pred <- function(data, model_list, meta_model, horizon){
               Comp_test[[m]][[c]][p:(n-cut),] <- IMF_xtest[[c]][p:(n-cut),]
               PTEmo[[m]][p,c] <- (predict(model_matrix[[m,c]], Comp_test[[m]][[c]][p,]))
               if (hrz <= lag){
-                for (l in 1:(h-1)) {Comp_test[[m]][[c]][p+l,l] <- PTEmo[[m]][p,c]}
+                for (l in 1:(hrz-1)) {Comp_test[[m]][[c]][p+l,l] <- PTEmo[[m]][p,c]}
               } else {
                 for (l in 1:lag) {Comp_test[[m]][[c]][p+l,l] <- PTEmo[[m]][p,c]}
               }
@@ -296,7 +296,7 @@ decomp_stack_pred <- function(data, model_list, meta_model, horizon){
       y~., data = stack_data_train,
       method = meta_model,
       trControl = control,
-      preProcess = c('center','scale'),
+      preProcess = c('center','scale','BoxCox'),
       trace = FALSE
     )
     
@@ -344,7 +344,7 @@ decomp_stack_pred <- function(data, model_list, meta_model, horizon){
   names(errors) <- names(step_vmd_pred)
   
   results <- list(Predictions = predictions,
-                  VMD_Metrics = metrics_vmd_test,
+                  Decomp_Metrics = metrics_vmd_test,
                   STACK_Metrics = metrics_stack_test,
                   Hyperparameters = Params,
                   Stack_params = stack_params,

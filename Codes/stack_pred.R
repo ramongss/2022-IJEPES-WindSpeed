@@ -14,7 +14,7 @@ stack_pred <- function(data, model_list, meta_model, horizon){
   
   # create train and test sets
   n <- nrow(data_lag)
-  cut <- round(n * 0.8)
+  cut <- n - 1008
   
   train <- data_lag[1:cut,]
   test <- tail(data_lag, n-cut)
@@ -112,7 +112,7 @@ stack_pred <- function(data, model_list, meta_model, horizon){
       x_trainm <- as.data.frame(x_train)
       x_testm <- as.data.frame(x_test)
       
-      if (h == 1) {
+      if (hrz == 1) {
         # train
         PTRmo[[h]][,m] <- (predict(models[[m]], x_trainm))
         
@@ -126,7 +126,7 @@ stack_pred <- function(data, model_list, meta_model, horizon){
             if(non_zero < 0){non_zero <- 0}
             PTRmo[[h]][p,m] <- non_zero
             if (hrz <= lag) {
-              for (l in 1:(h-1)) {x_trainm[p+l,l] <- PTRmo[[h]][p,m]}
+              for (l in 1:(hrz-1)) {x_trainm[p+l,l] <- PTRmo[[h]][p,m]}
             } else {
               for (l in 1:lag) {x_trainm[p+l,l] <- PTRmo[[h]][p,m]}
             }
@@ -136,7 +136,7 @@ stack_pred <- function(data, model_list, meta_model, horizon){
             if(non_zero < 0){non_zero <- 0}
             PTRmo[[h]][p,m] <- non_zero
             if (hrz <= lag) {
-              for (l in 1:(h-1)) {x_trainm[p+l,l] <- PTRmo[[h]][p,m]}
+              for (l in 1:(hrz-1)) {x_trainm[p+l,l] <- PTRmo[[h]][p,m]}
             } else {
               for (l in 1:lag) {x_trainm[p+l,l] <- PTRmo[[h]][p,m]}
             }
@@ -150,7 +150,7 @@ stack_pred <- function(data, model_list, meta_model, horizon){
             if(non_zero < 0){non_zero <- 0}
             PTEmo[[h]][p,m] <- non_zero
             if (hrz <= lag) {
-              for (l in 1:(h-1)) {x_testm[p+l,l] <- PTEmo[[h]][p,m]}
+              for (l in 1:(hrz-1)) {x_testm[p+l,l] <- PTEmo[[h]][p,m]}
             } else {
               for (l in 1:lag) {x_testm[p+l,l] <- PTEmo[[h]][p,m]}
             }
@@ -160,7 +160,7 @@ stack_pred <- function(data, model_list, meta_model, horizon){
             if(non_zero < 0){non_zero <- 0}
             PTEmo[[h]][p,m] <- non_zero
             if (hrz <= lag) {
-              for (l in 1:(h-1)) {x_testm[p+l,l] <- PTEmo[[h]][p,m]}
+              for (l in 1:(hrz-1)) {x_testm[p+l,l] <- PTEmo[[h]][p,m]}
             } else {
               for (l in 1:lag) {x_testm[p+l,l] <- PTEmo[[h]][p,m]}
             }
@@ -233,7 +233,7 @@ stack_pred <- function(data, model_list, meta_model, horizon){
       y~., data = stack_data_train,
       method = meta_model,
       trControl = control,
-      preProcess = c('center','scale'),
+      preProcess = c('center','scale','BoxCox'),
       trace = FALSE
     )
     
