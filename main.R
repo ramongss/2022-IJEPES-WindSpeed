@@ -62,7 +62,7 @@ model_list <- c(
   'pls'
 ) %>% sort()
 meta_model <- 'cubist'
-horizon <- c(3,6,12)
+horizon <- c(1,3,6)
 
 count <- 1
 for (dataset in seq(3)) {  
