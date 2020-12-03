@@ -210,104 +210,49 @@ datasets <- list()
 datasets24h <- list()
 # datasets for test sets
 for (ii in seq(3)) {
-  if (ii == 1){
-    datasets[[ii]] <- data.frame(
-      'Observed' = tail(ceemd_stack_results[[ii]]$Predictions$`1-step`[,'Obs'], 1008),
-      'OSA'      = tail(ceemd_stack_results[[ii]]$Predictions$`1-step`[,'corr'], 1008),
-      'Observed' = tail(ceemd_stack_results[[ii]]$Predictions$`2-step`[,'Obs'], 1008),
-      'TSA'      = tail(ceemd_stack_results[[ii]]$Predictions$`2-step`[,'BoxCox'], 1008),
-      'Observed' = tail(ceemd_stack_results[[ii]]$Predictions$`3-step`[,'Obs'], 1008),
-      'THA'      = tail(ceemd_stack_results[[ii]]$Predictions$`3-step`[,'pca'], 1008)
-    ) %>% melt() %>% data.frame(
-      rep(seq(1008)),
-      .,
-      rep(c('Observed','Predicted'), each = 1008),
-      rep(c("10 minutes","20 minutes","30 minutes"), each = 2*1008)
-    )
-  } else if (ii == 2) {
-    datasets[[ii]] <- data.frame(
-      'Observed' = tail(ceemd_stack_results[[ii]]$Predictions$`1-step`[,'Obs'], 1008),
-      'OSA'      = tail(ceemd_stack_results[[ii]]$Predictions$`1-step`[,'corr'], 1008),
-      'Observed' = tail(ceemd_stack_results[[ii]]$Predictions$`2-step`[,'Obs'], 1008),
-      'TSA'      = tail(ceemd_stack_results[[ii]]$Predictions$`2-step`[,'corr'], 1008),
-      'Observed' = tail(ceemd_stack_results[[ii]]$Predictions$`3-step`[,'Obs'], 1008),
-      'THA'      = tail(ceemd_stack_results[[ii]]$Predictions$`3-step`[,'pca'], 1008)
-    ) %>% melt() %>% data.frame(
-      rep(seq(1008)),
-      .,
-      rep(c('Observed','Predicted'), each = 1008),
-      rep(c("10 minutes","20 minutes","30 minutes"), each = 2*1008)
-    )
-  } else {
-    datasets[[ii]] <- data.frame(
-      'Observed' = tail(ceemd_stack_results[[ii]]$Predictions$`1-step`[,'Obs'], 1008),
-      'OSA'      = tail(ceemd_stack_results[[ii]]$Predictions$`1-step`[,'BoxCox'], 1008),
-      'Observed' = tail(ceemd_stack_results[[ii]]$Predictions$`2-step`[,'Obs'], 1008),
-      'TSA'      = tail(ceemd_stack_results[[ii]]$Predictions$`2-step`[,'BoxCox'], 1008),
-      'Observed' = tail(ceemd_stack_results[[ii]]$Predictions$`3-step`[,'Obs'], 1008),
-      'THA'      = tail(ceemd_stack_results[[ii]]$Predictions$`3-step`[,'pca'], 1008)
-    ) %>% melt() %>% data.frame(
-      rep(seq(1008)),
-      .,
-      rep(c('Observed','Predicted'), each = 1008),
-      rep(c("10 minutes","20 minutes","30 minutes"), each = 2*1008)
-    )
-  }
+  datasets[[ii]] <- data.frame(
+    'Observed' = tail(decomp_stack_results[[ii+6]]$Predictions$`1-step`[,'Obs'], 1008),
+    'OSA'      = tail(decomp_stack_results[[ii+6]]$Predictions$`1-step`[,2], 1008),
+    'Observed' = tail(decomp_stack_results[[ii+6]]$Predictions$`3-step`[,'Obs'], 1008),
+    'TSA'      = tail(decomp_stack_results[[ii+6]]$Predictions$`3-step`[,2], 1008),
+    'Observed' = tail(decomp_stack_results[[ii+6]]$Predictions$`6-step`[,'Obs'], 1008),
+    'SSA'      = tail(decomp_stack_results[[ii+6]]$Predictions$`6-step`[,2], 1008)
+  ) %>% melt() %>% data.frame(
+    rep(seq(1008)),
+    .,
+    rep(c('Observed','Predicted'), each = 1008),
+    rep(c("10 minutes","30 minutes","1 hour"), each = 2*1008)
+  )
+  
   datasets[[ii]]$variable <- NULL
   datasets[[ii]]$Set <- rep('Last 7 days')
   colnames(datasets[[ii]]) <- c('x','value', 'type', 'FH', "Set")
 }
 
+names(datasets) <- month.name[months]
+
 # datasets for 24h sets
 for (ii in seq(3)) {
-  if (ii == 1){
-    datasets24h[[ii]] <- data.frame(
-      'Observed' = tail(ceemd_stack_results[[ii]]$Predictions$`1-step`[,'Obs'], 144),
-      'OSA'      = tail(ceemd_stack_results[[ii]]$Predictions$`1-step`[,'corr'], 144),
-      'Observed' = tail(ceemd_stack_results[[ii]]$Predictions$`2-step`[,'Obs'], 144),
-      'TSA'      = tail(ceemd_stack_results[[ii]]$Predictions$`2-step`[,'BoxCox'], 144),
-      'Observed' = tail(ceemd_stack_results[[ii]]$Predictions$`3-step`[,'Obs'], 144),
-      'THA'      = tail(ceemd_stack_results[[ii]]$Predictions$`3-step`[,'pca'], 144)
-    ) %>% melt() %>% data.frame(
-      rep(seq(144)),
-      .,
-      rep(c('Observed','Predicted'), each = 144),
-      rep(c("10 minutes","20 minutes","30 minutes"), each = 2*144)
-    )
-  } else if (ii == 2) {
-    datasets24h[[ii]] <- data.frame(
-      'Observed' = tail(ceemd_stack_results[[ii]]$Predictions$`1-step`[,'Obs'], 144),
-      'OSA'      = tail(ceemd_stack_results[[ii]]$Predictions$`1-step`[,'corr'], 144),
-      'Observed' = tail(ceemd_stack_results[[ii]]$Predictions$`2-step`[,'Obs'], 144),
-      'TSA'      = tail(ceemd_stack_results[[ii]]$Predictions$`2-step`[,'corr'], 144),
-      'Observed' = tail(ceemd_stack_results[[ii]]$Predictions$`3-step`[,'Obs'], 144),
-      'THA'      = tail(ceemd_stack_results[[ii]]$Predictions$`3-step`[,'pca'], 144)
-    ) %>% melt() %>% data.frame(
-      rep(seq(144)),
-      .,
-      rep(c('Observed','Predicted'), each = 144),
-      rep(c("10 minutes","20 minutes","30 minutes"), each = 2*144)
-    )
-  } else {
-    datasets24h[[ii]] <- data.frame(
-      'Observed' = tail(ceemd_stack_results[[ii]]$Predictions$`1-step`[,'Obs'], 144),
-      'OSA'      = tail(ceemd_stack_results[[ii]]$Predictions$`1-step`[,'BoxCox'], 144),
-      'Observed' = tail(ceemd_stack_results[[ii]]$Predictions$`2-step`[,'Obs'], 144),
-      'TSA'      = tail(ceemd_stack_results[[ii]]$Predictions$`2-step`[,'BoxCox'], 144),
-      'Observed' = tail(ceemd_stack_results[[ii]]$Predictions$`3-step`[,'Obs'], 144),
-      'THA'      = tail(ceemd_stack_results[[ii]]$Predictions$`3-step`[,'pca'], 144)
-    ) %>% melt() %>% data.frame(
-      rep(seq(144)),
-      .,
-      rep(c('Observed','Predicted'), each = 144),
-      rep(c("10 minutes","20 minutes","30 minutes"), each = 2*144)
-    )
-  }
+  datasets24h[[ii]] <- data.frame(
+    'Observed' = tail(decomp_stack_results[[ii+6]]$Predictions$`1-step`[,'Obs'], 144),
+    'OSA'      = tail(decomp_stack_results[[ii+6]]$Predictions$`1-step`[,2], 144),
+    'Observed' = tail(decomp_stack_results[[ii+6]]$Predictions$`3-step`[,'Obs'], 144),
+    'TSA'      = tail(decomp_stack_results[[ii+6]]$Predictions$`3-step`[,2], 144),
+    'Observed' = tail(decomp_stack_results[[ii+6]]$Predictions$`6-step`[,'Obs'], 144),
+    'SSA'      = tail(decomp_stack_results[[ii+6]]$Predictions$`6-step`[,2], 144)
+  ) %>% melt() %>% data.frame(
+    rep(seq(144)),
+    .,
+    rep(c('Observed','Predicted'), each = 144),
+    rep(c("10 minutes","30 minutes","1 hour"), each = 2*144)
+  )
   
   datasets24h[[ii]]$variable <- NULL
   datasets24h[[ii]]$Set <- rep('Last 24 hours')
   colnames(datasets24h[[ii]]) <- c('x','value', 'type', 'FH','Set')
 }
+
+names(datasets24h) <- month.name[months]
 
 # grid
 for (dataset in seq(datasets)) {
@@ -315,7 +260,7 @@ for (dataset in seq(datasets)) {
   final_dataset <- rbind(datasets[[dataset]], datasets24h[[dataset]])
   
   # plot test set ----
-  final_dataset$FH <- final_dataset$FH %>% factor(levels = c("10 minutes","20 minutes","30 minutes"))
+  final_dataset$FH <- final_dataset$FH %>% factor(levels = c("10 minutes","30 minutes","1 hour"))
   final_dataset$Set <- final_dataset$Set %>% factor(levels = c("Last 7 days", "Last 24 hours"))
   
   plot_test <- final_dataset %>% as.data.frame %>% 
@@ -348,7 +293,7 @@ for (dataset in seq(datasets)) {
           strip.background = element_blank(),
           panel.grid.minor = element_blank(),
     ) +
-    ylab('Wind Power (KW)') +
+    ylab('Wind Speed') +
     xlab('Test samples (10 minutes)') +
     facet_grid(rows = vars(FH), cols = vars(Set),scales = "free") +
     scale_color_manual(values = c("#377EB8","#E41A1C")) +
@@ -363,7 +308,7 @@ for (dataset in seq(datasets)) {
       width = 12,
       height = 6.75,
       units = "in",
-      dpi = 300
+      dpi = 1200
     )
   
 }
@@ -374,30 +319,29 @@ setwd(FiguresDir)
 IMFs <- data.frame()
 Aux <- data.frame()
 
-for (dataset in seq(ceemd_stack_results)) {
-  Aux <- ceemd_stack_results[[dataset]]$IMF
+for (dataset in seq(3)) {
+  Aux <- decomp_stack_results[[dataset+6]]$IMF
   Aux$dataset <- rep(dates[dataset])
   Aux$n <- seq(nrow(Aux))
   IMFs <- rbind(IMFs,Aux %>% melt(id.vars = c('dataset','n')))
 }
 
 IMFs$dataset <- IMFs$dataset %>% 
-  factor(levels = c('2017-08','2017-09','2017-10'),
-         labels = c(month.name[8:10]))
+  factor(levels = dates,
+         labels = c(month.name[months]))
 
 imf_labels <- 
   c(
-    expression(paste(IMF[1])),
-    expression(paste(IMF[2])),
-    expression(paste(IMF[3])),
-    expression(paste(IMF[4])),
-    expression(paste(IMF[5])),
-    'Residue'
+    expression(paste(c[1])),
+    expression(paste(c[2])),
+    expression(paste(c[3])),
+    expression(paste(c[4])),
+    expression(paste(c[5]))
   )
 
 IMFs$variable <- IMFs$variable %>% 
   factor(
-    levels = c('Obs', paste0('IMF',seq(5)), 'Residue'),
+    levels = c('Obs', paste0('c',seq(5))),
     labels = c('Obs',imf_labels)
   )
 
@@ -410,6 +354,7 @@ imf_plot <- IMFs %>%
     text = element_text(family = "CM Roman", size = 16),
     strip.placement = "outside",
     strip.background = element_blank(),
+    strip.text.y = element_text(size = 18),
     panel.grid.minor = element_blank(),
   ) +
   ylab('') + xlab('Samples(10 minutes)') +
@@ -429,7 +374,7 @@ imf_plot %>%
     width = 12,
     height = 6.75,
     units = "in",
-    dpi = 300
+    dpi = 1200
   ) 
 
 ## Plot datasets ----
@@ -438,8 +383,8 @@ setwd(FiguresDir)
 obs_dataset <- data.frame()
 Aux2 <- data.frame()
 
-for (dataset in seq(wind_data)) {
-  Aux2 <- data.frame(obs = wind_data[[dataset]][,'Power'])
+for (dataset in seq(3)) {
+  Aux2 <- data.frame(obs = wind_data[[dataset]][,'Original'])
   Aux2$n <- seq(nrow(wind_data[[dataset]]))
   Aux2$type <- c(rep('Training', times = nrow(wind_data[[dataset]])-1008), 
                         rep('Test', times = 1008))
@@ -449,14 +394,14 @@ for (dataset in seq(wind_data)) {
 
 obs_dataset$dataset <- obs_dataset$dataset %>% 
   factor(
-    levels = paste0('dataset', seq(wind_data)),
-    labels = c(month.name[8:10])
+    levels = paste0('dataset', seq(3)),
+    labels = c(month.name[months])
   )
 
 dataplot <- obs_dataset %>% 
   ggplot(aes(x = n, y = obs)) +
   geom_line(size = 0.5, colour = '#377EB8') +
-  facet_grid(vars(dataset), scales = 'free', switch = 'y') +
+  facet_grid(vars(dataset), scales = 'free') +
   theme_bw() +
   theme(legend.title = element_blank(),
         legend.position = 'bottom',
@@ -468,7 +413,8 @@ dataplot <- obs_dataset %>%
         panel.grid.minor = element_blank(),
         strip.text = element_text(size = 20),
   ) +
-  ylab('') + xlab('Samples (10 minutes)')
+  ylab('Wind Speed') +
+  xlab('Samples (10 minutes)')
 
 dataplot %>% 
   ggsave(
@@ -477,7 +423,7 @@ dataplot %>%
     width = 12,
     height = 6.75,
     units = "in",
-    dpi = 300
+    dpi = 1200
   ) 
 
 ## Plot MAPE barplot ----
