@@ -47,7 +47,7 @@ setwd(ResultsDir)
 
 # set a list of dates to analyze
 months <- c(3,4,5)
-dates <- paste0('2020-',months,'-01') %>% as.Date() %>% format("%Y-%m")
+dates <- paste0('2020-',months,'-01') %>% format.Date(., "%Y-%m-%d") %>% as.Date()
 
 # create empty lists
 wind_data <- list()
@@ -326,9 +326,18 @@ for (dataset in seq(3)) {
   IMFs <- rbind(IMFs,Aux %>% melt(id.vars = c('dataset','n')))
 }
 
+dataset_labels <-
+  c(
+    expression(paste(March, " 2020")),
+    expression(paste(April, " 2020")),
+    expression(paste(May, " 2020"))
+  )
+
 IMFs$dataset <- IMFs$dataset %>% 
-  factor(levels = dates,
-         labels = c(month.name[months]))
+  factor(labels = dataset_labels)
+
+# IMFs$dataset <- IMFs$dataset %>% 
+#   factor(labels = c(paste(month.name[months], "2020")))
 
 imf_labels <- 
   c(
@@ -357,7 +366,7 @@ imf_plot <- IMFs %>%
     strip.text.y = element_text(size = 18),
     panel.grid.minor = element_blank(),
   ) +
-  ylab('') + xlab('Samples(10 minutes)') +
+  ylab('') + xlab('Time sampling (10 minutes)') +
   facet_grid(
     variable ~ dataset,
     scales = 'free',
@@ -395,7 +404,7 @@ for (dataset in seq(3)) {
 obs_dataset$dataset <- obs_dataset$dataset %>% 
   factor(
     levels = paste0('dataset', seq(3)),
-    labels = c(month.name[months])
+    labels = c(paste0(month.name[months], " 2020"))
   )
 
 dataplot <- obs_dataset %>% 
@@ -413,8 +422,8 @@ dataplot <- obs_dataset %>%
         panel.grid.minor = element_blank(),
         strip.text = element_text(size = 20),
   ) +
-  ylab('Wind Speed') +
-  xlab('Samples (10 minutes)')
+  ylab('Wind Speed (m/s)') +
+  xlab('Time sampling (10 minutes)')
 
 dataplot %>% 
   ggsave(
