@@ -206,30 +206,7 @@ for (dataset in seq(file_list)) {
 
 ## Plot Predict x Observed test ----
 setwd(FiguresDir)
-datasets <- list()
 datasets24h <- list()
-# datasets for test sets
-for (ii in seq(3)) {
-  datasets[[ii]] <- data.frame(
-    'Observed' = tail(decomp_stack_results[[ii+6]]$Predictions$`1-step`[,'Obs'], 1008),
-    'OSA'      = tail(decomp_stack_results[[ii+6]]$Predictions$`1-step`[,2], 1008),
-    'Observed' = tail(decomp_stack_results[[ii+6]]$Predictions$`3-step`[,'Obs'], 1008),
-    'TSA'      = tail(decomp_stack_results[[ii+6]]$Predictions$`3-step`[,2], 1008),
-    'Observed' = tail(decomp_stack_results[[ii+6]]$Predictions$`6-step`[,'Obs'], 1008),
-    'SSA'      = tail(decomp_stack_results[[ii+6]]$Predictions$`6-step`[,2], 1008)
-  ) %>% melt() %>% data.frame(
-    rep(seq(1008)),
-    .,
-    rep(c('Observed','Predicted'), each = 1008),
-    rep(c("10 minutes","30 minutes","1 hour"), each = 2*1008)
-  )
-  
-  datasets[[ii]]$variable <- NULL
-  datasets[[ii]]$Set <- rep('Last 7 days')
-  colnames(datasets[[ii]]) <- c('x','value', 'type', 'FH', "Set")
-}
-
-names(datasets) <- month.name[months]
 
 # datasets for 24h sets
 for (ii in seq(3)) {
@@ -244,74 +221,56 @@ for (ii in seq(3)) {
     rep(seq(144)),
     .,
     rep(c('Observed','Predicted'), each = 144),
-    rep(c("10 minutes","30 minutes","1 hour"), each = 2*144)
+    rep(c("10 minutes","30 minutes","60 minutes"), each = 2*144)
   )
   
   datasets24h[[ii]]$variable <- NULL
-  datasets24h[[ii]]$Set <- rep('Last 24 hours')
+  datasets24h[[ii]]$Set <- month.name[months[ii]]
   colnames(datasets24h[[ii]]) <- c('x','value', 'type', 'FH','Set')
 }
 
 names(datasets24h) <- month.name[months]
 
-# grid
-for (dataset in seq(datasets)) {
-  
-  final_dataset <- rbind(datasets[[dataset]], datasets24h[[dataset]])
-  
-  # plot test set ----
-  final_dataset$FH <- final_dataset$FH %>% factor(levels = c("10 minutes","30 minutes","1 hour"))
-  final_dataset$Set <- final_dataset$Set %>% factor(levels = c("Last 7 days", "Last 24 hours"))
-  
-  plot_test <- final_dataset %>% as.data.frame %>% 
-    ggplot(aes(x = x, y = value, colour = type)) +
-    geom_line(size = 1) +
-    geom_rect(
-      data = data.frame(Set = factor("Last 7 days")),
-      aes(xmin = 864,
-          xmax = 1020,
-          ymin = -Inf,
-          ymax = Inf),
-      fill = "#FF7F00", alpha = .3, inherit.aes = F
-    ) +
-    geom_text(
-      data = data.frame(
-        Set = factor("Last 7 days"), 
-        FH = factor("10 minutes")
-      ),
-      aes(x = 936, y = Inf, label = "Last 24 hours", family = "CM Roman"),
-      vjust = -0.5,
-      inherit.aes = F
-    ) +
-    theme_bw() +
-    theme(legend.title = element_blank(),
-          legend.position = 'bottom',
-          legend.background = element_blank(),
-          legend.text = element_text(size = 20),
-          text = element_text(family = "CM Roman", size = 20),
-          strip.placement = "outside",
-          strip.background = element_blank(),
-          panel.grid.minor = element_blank(),
-    ) +
-    ylab('Wind Speed') +
-    xlab('Test samples (10 minutes)') +
-    facet_grid(rows = vars(FH), cols = vars(Set),scales = "free") +
-    scale_color_manual(values = c("#377EB8","#E41A1C")) +
-    coord_cartesian(clip = "off") 
-  
-  plot_test
-  
-  plot_test %>% 
-    ggsave(
-      filename = paste0('PO_',dates[dataset],'.pdf'),
-      device = 'pdf',
-      width = 12,
-      height = 6.75,
-      units = "in",
-      dpi = 1200
-    )
-  
-}
+final_dataset <- do.call(rbind, datasets24h)
+
+rownames(final_dataset) <- NULL
+
+# plot test set 
+final_dataset$FH <- final_dataset$FH %>% factor(levels = c("10 minutes","30 minutes","60 minutes"))
+final_dataset$Set <- final_dataset$Set %>% factor(levels = month.name[months], labels = c(paste(month.name[months], "2020")))
+
+plot_test <- final_dataset %>% as.data.frame %>% 
+  ggplot(aes(x = x, y = value, colour = type)) +
+  geom_line(size = 0.8) +
+  theme_bw() +
+  theme(legend.title = element_blank(),
+        legend.position = 'bottom',
+        legend.background = element_blank(),
+        legend.text = element_text(size = 20),
+        text = element_text(family = "CM Roman", size = 20),
+        strip.placement = "outside",
+        strip.background = element_blank(),
+        panel.grid.minor = element_blank(),
+  ) +
+  ylab('Wind Speed (m/s)') +
+  xlab('Time sampling (10 minutes)') +
+  scale_x_continuous(breaks = seq(0, 144, 48)) + 
+  facet_grid(rows = vars(FH), cols = vars(Set), scales = "free") +
+  scale_color_manual(values = c("#377EB8","#E41A1C")) +
+  coord_cartesian(clip = "off") +
+  guides(colour = guide_legend(override.aes = list(size=5)))
+
+plot_test
+
+plot_test %>% 
+  ggsave(
+    filename = paste0('PO.pdf'),
+    device = 'pdf',
+    width = 12,
+    height = 6.75,
+    units = "in",
+    dpi = 1200
+  )
 
 ## Plot IMFs ----
 setwd(FiguresDir)
@@ -372,7 +331,8 @@ imf_plot <- IMFs %>%
     scales = 'free',
     switch = 'y',
     labeller = "label_parsed",
-  )
+  ) +
+  scale_y_continuous(breaks = scales::pretty_breaks(4))
 
 # imf_plot
 
@@ -410,7 +370,7 @@ obs_dataset$dataset <- obs_dataset$dataset %>%
 dataplot <- obs_dataset %>% 
   ggplot(aes(x = n, y = obs)) +
   geom_line(size = 0.5, colour = '#377EB8') +
-  facet_grid(vars(dataset), scales = 'free') +
+  facet_grid(vars(dataset)) +
   theme_bw() +
   theme(legend.title = element_blank(),
         legend.position = 'bottom',
@@ -424,6 +384,8 @@ dataplot <- obs_dataset %>%
   ) +
   ylab('Wind Speed (m/s)') +
   xlab('Time sampling (10 minutes)')
+
+dataplot
 
 dataplot %>% 
   ggsave(
