@@ -29,8 +29,9 @@ raincloudplot <-
   rawdata %>% 
   ggplot(aes(x = reorder(month, desc(Original)), y = Original, fill = month)) +
   # The half violins
-  geom_flat_violin(position = position_nudge(x = 0.2, y = 0), alpha = 0.8, 
-                   scale = "width") +
+  # geom_flat_violin(position = position_nudge(x = 0.2, y = 0), alpha = 0.8, 
+  #                  scale = "width") +
+  geom_flat_violin(position = position_nudge(x = 0.2, y = 0), alpha = 0.8) +
   # The points
   geom_point(aes(y = Original, color = month), 
              position = position_jitter(width = 0.15), size = 1, alpha = 0.1) +
@@ -54,11 +55,11 @@ raincloudplot <-
     axis.title.y = element_blank(),
     axis.line.x = element_line(color="black"), 
     axis.line.y = element_line(color="black"),
-    panel.border = element_blank(),
-    panel.grid.major.x = element_blank(),                                          
-    panel.grid.minor.x = element_blank(),
+    # panel.border = element_blank(),
+    # panel.grid.major.x = element_blank(),                                          
+    # panel.grid.minor.x = element_blank(),
     panel.grid.minor.y = element_blank(),
-    panel.grid.major.y = element_blank(),  
+    panel.grid.major.y = element_blank(),
     plot.margin = unit(c(1, 1, 1, 1), units = , "cm"),
     plot.title = element_text(size = 18, vjust = 1, hjust = 0),
     legend.text = element_text(size = 12),          

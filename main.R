@@ -397,62 +397,6 @@ dataplot %>%
     dpi = 1200
   ) 
 
-## Plot MAPE barplot ----
-setwd(FiguresDir)
-
-mape_metrics <- data.frame()
-Aux3 <- data.frame()
-
-for (dataset in seq(ceemd_stack_results)) {
-  for (horizon in seq(months)) {
-    Aux3 <- data.frame(mape = ceemd_stack_results[[dataset]]$STACK_Metrics[[horizon]][, "MAPE"]*100)
-    Aux3$dataset <- rep(month.name[months[dataset]]) %>% as.factor()
-    Aux3$model <- rep(c('BC', 'CORR', 'PCA'))
-    Aux3$FH <- rep(paste0(horizon,'0 min'))
-    rownames(Aux3) <- NULL
-    mape_metrics <- rbind(mape_metrics, Aux3)
-  }
-}
-
-mape_barplot <- mape_metrics %>% 
-  ggplot(aes(x = FH, y = mape, fill = model)) +
-  geom_bar(
-    position = position_dodge(),
-    stat = 'identity',
-    color = 'black'
-  ) +
-  geom_text(
-    aes(label = round(mape, 2)),
-    position = position_dodge(width = 0.9),
-    vjust = -0.25,
-    family = 'CM Roman'
-  ) +
-  facet_wrap(vars(dataset), ncol = 3) +
-  theme_bw() +
-  theme(#legend.title = element_blank(),
-        legend.position = 'bottom',
-        legend.background = element_blank(),
-        legend.text = element_text(size = 20),
-        text = element_text(family = "CM Roman", size = 20),
-        strip.placement = "outside",
-        strip.background = element_blank(),
-        panel.grid.minor = element_blank(),
-        strip.text = element_text(size = 20),
-  ) +
-  ylab('MAPE (%)') + xlab('Forecasting Horizon') + 
-  scale_y_continuous(expand = c(0, NA), limits = c(0, 10)) +
-  scale_fill_brewer(palette = 'Set1', name = 'Model')
-
-mape_barplot %>% 
-  ggsave(
-    filename = 'mape_barplot.pdf',
-    device = 'pdf',
-    width = 12,
-    height = 6.75,
-    units = "in",
-    dpi = 300
-  ) 
-
 ## Plot errors' std radarplot ----
 setwd(FiguresDir)
 
@@ -483,38 +427,6 @@ for (dataset in seq(ceemd_stack_results)) {
   
 }
 names(error) <- month.name[months]
-
-## Summary table ----
-summaries_table <- data.frame(
-  'Variable' = rep(names(wind_data[[1]])[-1], times = 3),
-  'Samples' = rep(c('Whole', 'Training', 'Test'), each = ncol(wind_data[[1]][-1]))
-)
-
-for (dataset in seq(length(wind_data))) {
-  #Descriptives
-  n <- nrow(wind_data[[dataset]])
-  cut <- n - 1008
-  
-  #Whole
-  Whole <- t(apply(wind_data[[dataset]][,-1],2,function(x){c(mean(x),sd(x),min(x),max(x))}))
-  colnames(Whole) <- paste0(c('Mean.', 'Std.', 'Min.', 'Max.'), dataset)
-  #Train Descriptives
-  Train <- t(apply(wind_data[[dataset]][1:cut,-1],2,function(x){c(mean(x),sd(x),min(x),max(x))}))
-  colnames(Train) <- names(Whole)
-  #Test Descriptives
-  Test <- t(apply(tail(wind_data[[dataset]][,-1],n - cut),2,function(x){c(mean(x),sd(x),min(x),max(x))}))
-  colnames(Test) <- names(Whole)
-  
-  #Merge
-  summaries_table <- cbind(summaries_table, rbind(Whole, Train, Test))
-  row.names(summaries_table) <- NULL # reset row index
-}
-
-# Reorder rows
-summaries_table <- summaries_table %>% 
-  arrange(factor(Variable, levels = names(wind_data[[1]][-1])))
-
-print(xtable::xtable(summaries_table, digits = 2), include.rownames = FALSE)
 
 ## DM test ----
 error <- list()

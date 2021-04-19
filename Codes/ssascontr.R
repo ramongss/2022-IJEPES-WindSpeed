@@ -7,7 +7,6 @@ ssascontr <- function(Y, L) {
   #   D - components' contributions to the input series in %
   
   # install.packages('pracma')
-  library(pracma)
   
   T <- length(Y)
   
@@ -18,7 +17,7 @@ ssascontr <- function(Y, L) {
     X[,k] <- Y[k:(k+L-1)]
   }
   
-  D <- eig(X %*% t(X))
+  D <- pracma::eig(X %*% t(X))
   D <- D/sum(D)
   
   return(D)

@@ -90,8 +90,8 @@ pop_ip_plot %>%
   ggsave(
     filename = here::here("Figures", "avr_ip.pdf"),
     device = "pdf",
-    width = 8,
-    height = 4.5,
+    width = 12,
+    height = 6.75,
     units = "in",
     dpi = 1200
   )
