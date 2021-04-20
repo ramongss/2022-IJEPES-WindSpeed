@@ -42,11 +42,12 @@ plot <- ssa %>%
     # expand = c(0, 0)
   ) +
   annotation_logticks(sides = 'l') +
-  xlab('Components number') + ylab('Normalized spectrum')
+  xlab('Eigenvalue number') +
+  ylab('Eigenvalue - % of explained variance (log)')
 
 plot %>% ggsave(
   filename = here::here("Figures", "spectrum.pdf"),
   device = 'pdf',
-  width = 12,
-  height = 6.75
+  width = 10,
+  height = 5.625
 )

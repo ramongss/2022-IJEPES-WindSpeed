@@ -5,7 +5,7 @@ import pandas as pd
 from math import pi
 plt.style.use('science')
 
-months = ['March', 'April', 'May']
+months = ['March 2020', 'April 2020', 'May 2020']
 
 fig = plt.figure(figsize=(20.25,6.75))
 fig, axs = plt.subplots(nrows=1, ncols=3, subplot_kw=dict(projection='polar'))
@@ -39,13 +39,13 @@ for ii in range(1,4):
   
   # Draw one axe per variable + add labels labels yet
   ax.set_xticks(ticks=angles[:-1])
-  ax.set_xticklabels(categories, fontdict={'fontsize':12})
+  ax.set_xticklabels(categories, fontdict={'fontsize':16})
   
   ax.set_rlabel_position(0)
   ticks=ax.yaxis.get_major_ticks()
   for tick in ticks:
     tick.label1.set_color('grey')
-  tick.label1.set_size(10)
+    tick.label1.set_size(14)
   ax.set_ylim(df.values.min(),df.values.max()+0.1)
   
   
@@ -79,7 +79,7 @@ for ii in range(1,4):
 # plt.legend(loc='lower left', bbox_to_anchor=(-1.5, -0.2), fontsize=16, ncol=3) # legend at up left
 handles, labels = ax.get_legend_handles_labels()
 # #fig.legend(handles, labels, bbox_to_anchor=(0.8,0.9), loc='lower left', fontsize=6)
-fig.legend(handles, labels, ncol = 3, loc='center', bbox_to_anchor=(0.26, -0.2, 0.5, 0.5), fontsize=16)
+fig.legend(handles, labels, ncol = 3, loc='center', bbox_to_anchor=(0.26, -0.2, 0.5, 0.5), fontsize=20)
 
 fig.set_size_inches(20.25, 6.75)
 fig.savefig('radarplot.pdf',dpi=1200, bbox_inches='tight', pad_inches=0)

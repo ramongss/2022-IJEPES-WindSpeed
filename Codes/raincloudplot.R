@@ -78,8 +78,8 @@ raincloudplot %>%
   ggsave(
     filename = here::here("Figures", "raincloudplot.pdf"),
     device = "pdf",
-    width = 12,
-    height = 6.75,
+    width = 10,
+    height = 5.625,
     units = "in",
     dpi = 1200
   )
