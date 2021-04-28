@@ -24,6 +24,7 @@ plot <- ssa %>%
   geom_point(size = 3, colour = '#E41A1C') +
   ggrepel::geom_text_repel(
     aes(label = paste0("lambda[",x,"]","*\'=\'~",label,"*\'%\'")),
+    size = 5,
     parse = T,
     force = T
   ) +
@@ -44,6 +45,8 @@ plot <- ssa %>%
   annotation_logticks(sides = 'l') +
   xlab('Eigenvalue number') +
   ylab('Eigenvalue - % of explained variance (log)')
+
+plot
 
 plot %>% ggsave(
   filename = here::here("Figures", "spectrum.pdf"),
