@@ -1,15 +1,18 @@
 library(magrittr)
 
 ## load decomp data
-file_list <- here::here("Results", list.files(pattern = 'stack.rds')) # list the .rds files
+file_list <- 
+  paste0(here::here("Results"), "/",
+         list.files(path = here::here("Results"), pattern = 'stack.rds')) # list the .rds files
 decomp_stack_results <- list()
-
 for (dataset in seq(file_list)) {
   decomp_stack_results[[dataset]] <- readRDS(file = file_list[dataset])
 }
 
 ## load stack data
-file_list <- here::here("Results", list.files(pattern = 'results_stack'))
+file_list <- 
+  paste0(here::here("Results"), "/",
+         list.files(path = here::here("Results/"), pattern = 'results_stack'))
 stack_results <- list()
 for (dataset in seq(file_list)) {
   stack_results[[dataset]] <- readRDS(file = file_list[dataset])

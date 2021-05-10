@@ -1,9 +1,14 @@
 # Libraries
+import pathlib
 import matplotlib.pyplot as plt
 #from matplotlib import PolarAxesSubplot
 import pandas as pd
 from math import pi
 plt.style.use('science')
+
+cwd = pathlib.Path.cwd()
+data_dir = cwd.joinpath('..','Data')
+fig_dir = cwd.joinpath('..','Figures')
 
 months = ['March 2020', 'April 2020', 'May 2020']
 
@@ -13,7 +18,8 @@ plt.subplots_adjust(wspace=0.2)
 
 for ii in range(1,4):
   # Set data
-  df = pd.read_csv('dataset{}_std.csv'.format(ii))
+  #df = pd.read_csv('dataset{}_std.csv'.format(ii))
+  df = pd.read_csv(data_dir.joinpath(f'dataset{ii}_std.csv'))
 
   # create a color palette
   palette = plt.get_cmap('Set1')
@@ -82,4 +88,5 @@ handles, labels = ax.get_legend_handles_labels()
 fig.legend(handles, labels, ncol = 3, loc='center', bbox_to_anchor=(0.26, -0.2, 0.5, 0.5), fontsize=20)
 
 fig.set_size_inches(20.25, 6.75)
-fig.savefig('radarplot.pdf',dpi=1200, bbox_inches='tight', pad_inches=0)
+#fig.savefig('radarplot.pdf',dpi=1200, bbox_inches='tight', pad_inches=0)
+fig.savefig(fig_dir.joinpath('radarplot.pdf'),dpi=1200, bbox_inches='tight', pad_inches=0)
