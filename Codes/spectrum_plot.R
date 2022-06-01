@@ -5,17 +5,17 @@ library(extrafont)
 # load ssa function
 source(here::here("Codes", "ssascontr.R"))
 
-Y <- 
+Y <-
   readxl::read_excel(
     here::here("Data", "dataset.xlsx"),
     sheet = 1
-  ) %>% 
-  dplyr::select(Original) %>% 
+  ) %>%
+  dplyr::select(Original) %>%
   dplyr::pull(Original)
 
-ssa <- 
+ssa <-
   data.frame(x = seq(12),
-             y = round(ssascontr(Y, 12), 5)) %>% 
+             y = round(ssascontr(Y, 12), 5)) %>%
   dplyr::mutate(label = y*100)
 
 plot <- ssa %>%
@@ -26,11 +26,12 @@ plot <- ssa %>%
     aes(label = paste0("lambda[",x,"]","*\'=\'~",label,"*\'%\'")),
     size = 5,
     parse = T,
-    force = T
+    force = T,
+    family = "Times"
   ) +
   theme_bw() +
   theme(
-    text = element_text(family = 'CM Roman', size = 16),
+    text = element_text(family = 'Times', size = 16),
     axis.text = element_text(size = 14),
     panel.grid.minor.x = element_blank()
   ) +

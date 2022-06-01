@@ -3,7 +3,7 @@ library(magrittr)
 # Create error dataframes ----
 
 ## load decomp data
-file_list <- 
+file_list <-
   paste0(here::here("Results"), "/",
          list.files(path = here::here("Results"), pattern = 'stack.rds')) # list the .rds files
 decomp_stack_results <- list()
@@ -12,7 +12,7 @@ for (dataset in seq(file_list)) {
 }
 
 ## load stack data
-file_list <- 
+file_list <-
   paste0(here::here("Results"), "/",
          list.files(path = here::here("Results/"), pattern = 'results_stack'))
 stack_results <- list()
@@ -27,13 +27,13 @@ months <- month.name[c(3,4,5)]
 count <- 1
 for (dataset in seq(datasets)) {
   for (month in seq(months)) {
-    names(decomp_stack_results)[[count]] <- 
+    names(decomp_stack_results)[[count]] <-
       paste(datasets[dataset], months[month], sep = '-')
-    
+
     if (count %in% c(1:3)) {
       names(stack_results)[[count]] <- months[month]
     }
-    
+
     count <- count + 1
   }
 }
@@ -43,7 +43,7 @@ error <- list()
 # March
 error[["March"]] <- list()
 for (horizon in seq(decomp_stack_results[[dataset]]$Errors)) {
-  error[["March"]][[horizon]] <- 
+  error[["March"]][[horizon]] <-
     cbind(
       tail(decomp_stack_results$`VMD_SSA-March`$Errors[[horizon]], 1008),
       tail(decomp_stack_results$`VMD-March`$Errors[[horizon]], 1008),
@@ -55,7 +55,7 @@ for (horizon in seq(decomp_stack_results[[dataset]]$Errors)) {
 # April
 error[["April"]] <- list()
 for (horizon in seq(decomp_stack_results[[dataset]]$Errors)) {
-  error[["April"]][[horizon]] <- 
+  error[["April"]][[horizon]] <-
     cbind(
       tail(decomp_stack_results$`VMD_SSA-April`$Errors[[horizon]], 1008),
       tail(decomp_stack_results$`VMD-April`$Errors[[horizon]], 1008),
@@ -67,7 +67,7 @@ for (horizon in seq(decomp_stack_results[[dataset]]$Errors)) {
 # May
 error[["May"]] <- list()
 for (horizon in seq(decomp_stack_results[[dataset]]$Errors)) {
-  error[["May"]][[horizon]] <- 
+  error[["May"]][[horizon]] <-
     cbind(
       tail(decomp_stack_results$`VMD_SSA-May`$Errors[[horizon]], 1008),
       tail(decomp_stack_results$`VMD-May`$Errors[[horizon]], 1008),
@@ -81,7 +81,7 @@ for (dataset in seq(3)) {
     colnames(error[[dataset]][[horizon]]) <- LETTERS[1:20]
     rownames(error[[dataset]][[horizon]]) <- NULL
   }
-  names(error[[dataset]]) <- paste0(c(1,3,6),"-step")
+  names(error[[dataset]]) <- paste0("step_", steps)
 }
 
 
@@ -106,7 +106,7 @@ for (dataset in seq(3)) {
     rownames(DM_tvalue[[dataset]][[horizon]]) <- LETTERS[1:ncol(error[[dataset]][[horizon]])]
     DM_pvalue[[dataset]][[horizon]] <- DM_tvalue[[dataset]][[horizon]]
     DM_presult[[dataset]][[horizon]] <- DM_tvalue[[dataset]][[horizon]]
-    
+
     for (col in seq(ncol(DM_tvalue[[dataset]][[horizon]]))) {
       for (row in seq(nrow(DM_tvalue[[dataset]][[horizon]]))) {
         if (col == row) {
@@ -123,7 +123,7 @@ for (dataset in seq(3)) {
           )
           DM_tvalue[[dataset]][[horizon]][row,col] <- DMtest$statistic
           DM_pvalue[[dataset]][[horizon]][row,col] <- DMtest$p.value
-          
+
           if (DM_pvalue[[dataset]][[horizon]][row,col] <= 0.01) {
             DM_presult[[dataset]][[horizon]][row,col] <- '*'
           } else if (DM_pvalue[[dataset]][[horizon]][row,col] <= 0.05 && DM_pvalue[[dataset]][[horizon]][row,col] > 0.01){
@@ -134,7 +134,7 @@ for (dataset in seq(3)) {
         }
       }
     }
-    
+
   }
   names(DM_tvalue[[dataset]]) <- names(error[[dataset]])
   names(DM_pvalue[[dataset]]) <- names(error[[dataset]])
@@ -149,17 +149,17 @@ tvalue <- do.call(cbind, do.call(cbind, DM_tvalue))
 pvalue <- do.call(cbind, do.call(cbind, DM_pvalue))
 presult <- do.call(cbind, do.call(cbind, DM_presult))
 
-tvalue %>% 
+tvalue %>%
   write.csv(here::here("Results", "DM_tvalue.csv"),
             row.names = T,
             col.names = T)
 
-pvalue %>% 
+pvalue %>%
   write.csv(here::here("Results", "DM_pvalue.csv"),
             row.names = T,
             col.names = T)
 
-presult %>% 
+presult %>%
   write.csv(here::here("Results", "DM_presult.csv"),
             row.names = T,
             col.names = T)

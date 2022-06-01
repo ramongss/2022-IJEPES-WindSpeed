@@ -1,7 +1,8 @@
 # Set environment ---------------------------------------------------------
 rm(list = ls())
-Sys.setenv("LANGUAGE" = "En")
-Sys.setlocale("LC_ALL", "English")
+Sys.setenv("LANGUAGE" = "en_US.UTF-8")
+Sys.setlocale("LC_CTYPE", "en_US.UTF-8")
+Sys.setlocale("LC_TIME", "en_US.UTF-8")
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
 # save several directories
@@ -32,7 +33,7 @@ library(Cairo)
 
 # Data treatment ----------------------------------------------------------
 # set working directory
-setwd(DataDir) 
+setwd(DataDir)
 
 # load data
 raw_data <- list()
@@ -65,36 +66,36 @@ meta_model <- 'cubist'
 horizon <- c(1,3,6)
 
 count <- 1
-for (dataset in seq(3)) {  
+for (dataset in seq(3)) {
   for (month in seq(months)) {
     # filtering the data according to month list
-    wind_data[[count]] <- raw_data[[dataset]][months(raw_data[[dataset]]$TimeStamp) %in% month.name[months[month]],] %>% as.data.frame()
-    names(wind_data)[[count]] <- paste(names(raw_data)[dataset], month.name[months[month]], sep = '-')
-    
-    # training using ceemd stack
-    decomp_stack_results[[count]] <- decomp_stack_pred(wind_data[[count]], model_list, meta_model, horizon)
+    # wind_data[[count]] <- raw_data[[dataset]][months(raw_data[[dataset]]$TimeStamp) %in% month.name[months[month]],] %>% as.data.frame()
+    # names(wind_data)[[count]] <- paste(names(raw_data)[dataset], month.name[months[month]], sep = '-')
+
+    # # training using ceemd stack
+    # decomp_stack_results[[count]] <- decomp_stack_pred(wind_data[[count]], model_list, meta_model, horizon)
     names(decomp_stack_results)[[count]] <- names(wind_data)[[count]]
 
-    # save results
-    saveRDS(
-      object = decomp_stack_results[[count]],
-      file = paste0('results_',names(raw_data)[dataset],'_',dates[month],'_stack.rds')
-    )
+    # # save results
+    # saveRDS(
+    #   object = decomp_stack_results[[count]],
+    #   file = paste0('results_',names(raw_data)[dataset],'_',dates[month],'_stack.rds')
+    # )
 
-    # training using stack models
+    # # training using stack models
     if (count %in% c(1:3)) {
-      stack_results[[count]] <- stack_pred(wind_data[[count]], model_list, meta_model, horizon)
+    #   stack_results[[count]] <- stack_pred(wind_data[[count]], model_list, meta_model, horizon)
       names(stack_results)[[count]] <- month.name[months[month]]
 
       # save results
-      saveRDS(
-        object = stack_results[[count]],
-        file = paste0('results_stack_',dates[month],'.rds')
-      )
+    #   saveRDS(
+    #     object = stack_results[[count]],
+    #     file = paste0('results_stack_',dates[month],'.rds')
+    #   )
     }
-    
+
     cat("\n\nModel:", names(raw_data)[dataset], '\tMonth:', month.name[months[month]])
-    
+
     count <- count + 1
   }
 }
@@ -110,9 +111,9 @@ FH <- paste0(horizon, '-steps') # aux to create forecasting horizon column
 count <- 1
 for (dataset in seq(3)) {
   for (month in seq(months)) {
-    filename_decomp_stack <- paste0('metrics_', names(raw_data)[dataset],'_',dates[month],'_stack.csv') # decomp stack file name  
+    filename_decomp_stack <- paste0('metrics_', names(raw_data)[dataset],'_',dates[month],'_stack.csv') # decomp stack file name
     file.create(filename_decomp_stack) # create file decomp
-    
+
     # append header in csv files
     data.frame('model','FH','MAE','MAPE','RMSE') %>%
       write.table(file = filename_decomp_stack,
@@ -120,7 +121,7 @@ for (dataset in seq(3)) {
                   sep = ',',
                   col.names = FALSE,
                   row.names = FALSE)
-    
+
     for (metric in seq(decomp_stack_results[[count]]$Decomp_Metrics)) {
       # save decomp stack metrics in csv
       data.frame(
@@ -133,7 +134,7 @@ for (dataset in seq(3)) {
                     sep = ',',
                     row.names = FALSE,
                     col.names = FALSE)
-      
+
       # save decomp metrics in csv
       data.frame(
         FH = rep(FH[metric]),
@@ -144,7 +145,7 @@ for (dataset in seq(3)) {
                     sep = ',',
                     row.names = TRUE,
                     col.names = FALSE)
-      
+
     }
     count <- count + 1
   }
@@ -159,7 +160,7 @@ for (dataset in seq(months)) {
                 sep = ',',
                 col.names = FALSE,
                 row.names = FALSE)
-  
+
   for (metric in seq(stack_results[[dataset]]$Metrics)) {
     # save stack metrics in csv
     data.frame(
@@ -223,7 +224,7 @@ for (ii in seq(3)) {
     rep(c('Observed','Predicted'), each = 144),
     rep(c("10 minutes","30 minutes","60 minutes"), each = 2*144)
   )
-  
+
   datasets24h[[ii]]$variable <- NULL
   datasets24h[[ii]]$Set <- month.name[months[ii]]
   colnames(datasets24h[[ii]]) <- c('x','value', 'type', 'FH','Set')
@@ -235,11 +236,11 @@ final_dataset <- do.call(rbind, datasets24h)
 
 rownames(final_dataset) <- NULL
 
-# plot test set 
+# plot test set
 final_dataset$FH <- final_dataset$FH %>% factor(levels = c("10 minutes","30 minutes","60 minutes"))
 final_dataset$Set <- final_dataset$Set %>% factor(levels = month.name[months], labels = c(paste(month.name[months], "2020")))
 
-plot_test <- final_dataset %>% as.data.frame %>% 
+plot_test <- final_dataset %>% as.data.frame %>%
   ggplot(aes(x = x, y = value, colour = type)) +
   geom_line(size = 0.8) +
   theme_bw() +
@@ -247,14 +248,14 @@ plot_test <- final_dataset %>% as.data.frame %>%
         legend.position = 'bottom',
         legend.background = element_blank(),
         legend.text = element_text(size = 20),
-        text = element_text(family = "CM Roman", size = 20),
+        text = element_text(family = "Times", size = 20),
         strip.placement = "outside",
         strip.background = element_blank(),
         panel.grid.minor = element_blank(),
   ) +
   ylab('Wind Speed (m/s)') +
   xlab('Time sampling (10 minutes)') +
-  scale_x_continuous(breaks = seq(0, 144, 48)) + 
+  scale_x_continuous(breaks = seq(0, 144, 48)) +
   facet_grid(rows = vars(FH), cols = vars(Set), scales = "free") +
   scale_color_manual(values = c("#377EB8","#E41A1C")) +
   coord_cartesian(clip = "off") +
@@ -262,7 +263,7 @@ plot_test <- final_dataset %>% as.data.frame %>%
 
 plot_test
 
-plot_test %>% 
+plot_test %>%
   ggsave(
     filename = paste0('PO.pdf'),
     device = 'pdf',
@@ -287,18 +288,18 @@ for (dataset in seq(3)) {
 
 dataset_labels <-
   c(
-    expression(paste(March, " 2020")),
-    expression(paste(April, " 2020")),
-    expression(paste(May, " 2020"))
+    expression(paste("March 2020")),
+    expression(paste("April 2020")),
+    expression(paste("May 2020"))
   )
 
-IMFs$dataset <- IMFs$dataset %>% 
+IMFs$dataset <- IMFs$dataset %>%
   factor(labels = dataset_labels)
 
-# IMFs$dataset <- IMFs$dataset %>% 
+# IMFs$dataset <- IMFs$dataset %>%
 #   factor(labels = c(paste(month.name[months], "2020")))
 
-imf_labels <- 
+imf_labels <-
   c(
     expression(paste(c[1])),
     expression(paste(c[2])),
@@ -307,19 +308,19 @@ imf_labels <-
     expression(paste(c[5]))
   )
 
-IMFs$variable <- IMFs$variable %>% 
+IMFs$variable <- IMFs$variable %>%
   factor(
     levels = c('Obs', paste0('c',seq(5))),
     labels = c('Obs',imf_labels)
   )
 
-imf_plot <- IMFs %>% 
+imf_plot <- IMFs %>%
   filter(variable != 'Obs') %>%
-  ggplot(aes(x = n, y = value, colour = variable)) +
-  geom_line(size = 0.3, colour = '#377EB8') +
+  ggplot(aes(x = n, y = value, colour = dataset)) +
+  geom_line(size = 0.3, show.legend = FALSE) +
   theme_bw() +
   theme(
-    text = element_text(family = "CM Roman", size = 16),
+    text = element_text(family = "Times", size = 16),
     strip.placement = "outside",
     strip.background = element_blank(),
     strip.text.y = element_text(size = 18),
@@ -332,11 +333,12 @@ imf_plot <- IMFs %>%
     switch = 'y',
     labeller = "label_parsed",
   ) +
-  scale_y_continuous(breaks = scales::pretty_breaks(4))
+  scale_y_continuous(breaks = scales::pretty_breaks(4)) +
+  scale_color_brewer(palette = "Set1")
 
-# imf_plot
+imf_plot
 
-imf_plot %>% 
+imf_plot %>%
   ggsave(
     filename = 'imf_plot.pdf',
     device = 'pdf',
@@ -344,7 +346,7 @@ imf_plot %>%
     height = 6.75,
     units = "in",
     dpi = 1200
-  ) 
+  )
 
 ## Plot datasets ----
 setwd(FiguresDir)
@@ -355,39 +357,40 @@ Aux2 <- data.frame()
 for (dataset in seq(3)) {
   Aux2 <- data.frame(obs = wind_data[[dataset]][,'Original'])
   Aux2$n <- seq(nrow(wind_data[[dataset]]))
-  Aux2$type <- c(rep('Training', times = nrow(wind_data[[dataset]])-1008), 
+  Aux2$type <- c(rep('Training', times = nrow(wind_data[[dataset]])-1008),
                         rep('Test', times = 1008))
   Aux2$dataset <- rep(paste0('dataset', dataset))
   obs_dataset <- rbind(obs_dataset, Aux2)
 }
 
-obs_dataset$dataset <- obs_dataset$dataset %>% 
+obs_dataset$dataset <- obs_dataset$dataset %>%
   factor(
     levels = paste0('dataset', seq(3)),
     labels = c(paste0(month.name[months], " 2020"))
   )
 
-dataplot <- obs_dataset %>% 
-  ggplot(aes(x = n, y = obs)) +
-  geom_line(size = 0.5, colour = '#377EB8') +
+dataplot <- obs_dataset %>%
+  ggplot(aes(x = n, y = obs, colour = dataset)) +
+  geom_line(size = 0.5, show.legend = FALSE) +
   facet_grid(vars(dataset)) +
   theme_bw() +
-  theme(legend.title = element_blank(),
-        legend.position = 'bottom',
-        legend.background = element_blank(),
-        legend.text = element_text(size = 20),
-        text = element_text(family = "CM Roman", size = 20),
+  theme(#legend.title = element_blank(),
+        #legend.position = 'bottom',
+        #legend.background = element_blank(),
+        #legend.text = element_text(size = 20),
+        text = element_text(family = "Times", size = 20),
         strip.placement = "outside",
         strip.background = element_blank(),
         panel.grid.minor = element_blank(),
         strip.text = element_text(size = 20),
   ) +
   ylab('Wind Speed (m/s)') +
-  xlab('Time sampling (10 minutes)')
+  xlab('Time sampling (10 minutes)') +
+  scale_colour_brewer(palette = "Set1")
 
 dataplot
 
-dataplot %>% 
+dataplot %>%
   ggsave(
     filename = 'datasets_plot.pdf',
     device = 'pdf',
@@ -395,4 +398,4 @@ dataplot %>%
     height = 6.75,
     units = "in",
     dpi = 1200
-  ) 
+  )
